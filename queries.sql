@@ -131,4 +131,58 @@ SELECT MIN(weight_kg), MAX(weight_kg) FROM animals; /* min and max from all anim
 /* 
 What is the average number of escape attempts per animal type of those born between 1990 and 2000?
 */
-SELECT AVG(escape_attempts) FROM animals WHERE EXTRACT(YEAR FROM date_of_birth)BETWEEN 1990 AND 2000 GROUP BY species;
+SELECT AVG(escape_attempts) FROM animals
+WHERE EXTRACT(YEAR FROM date_of_birth) BETWEEN 1990 AND 2000 GROUP BY species;
+
+/*
+Write queries (using JOIN) to answer the following questions:
+- What animals belong to Melody Pond?
+*/
+SELECT * FROM animals INNER JOIN owners ON animals.owner_id = owners.id
+WHERE owners.full_name = 'Melody Pond';
+/*
+- List of all animals that are pokemon (their type is Pokemon).
+*/
+SELECT * FROM animals INNER JOIN species ON animals.species_id = species.id
+WHERE species.name = 'Pokemon';
+/*
+- List all owners and their animals, remember to include those that don't own any animal.
+*/
+SELECT * FROM owners LEFT JOIN animals ON owners.id = animals.owner_id;
+/*
+- How many animals are there per species?
+*/
+SELECT species.name, COUNT(*) FROM species
+INNER JOIN animals ON species.id = animals.species_id
+GROUP BY species.name;
+/*
+- List all Digimon owned by Jennifer Orwell.
+*/
+SELECT * FROM animals
+INNER JOIN species ON animals.species_id = species.id
+INNER JOIN owners ON animals.owner_id = owners.id
+WHERE species.name = 'Digimon' AND owners.full_name = 'Jennifer Orwell';
+/*
+- List all animals owned by Dean Winchester that haven't tried to escape.
+*/
+SELECT * FROM animals
+INNER JOIN owners ON animals.owner_id = owners.id
+WHERE owners.full_name = 'Dean Winchester' AND animals.escape_attempts = 0;
+/*
+- Who owns the most animals?
+*/
+SELECT owners_animals.full_name, count FROM
+(
+  SELECT owners.full_name, COUNT(*) FROM animals
+  INNER JOIN owners ON animals.owner_id = owners.id
+  GROUP BY owners.full_name
+) as owners_animals
+GROUP BY (full_name, count)
+HAVING count = (
+  SELECT MAX(count) FROM 
+  (
+    SELECT owners.full_name, COUNT(*) FROM animals
+    INNER JOIN owners ON animals.owner_id = owners.id
+    GROUP BY owners.full_name
+  ) AS FOO
+);
